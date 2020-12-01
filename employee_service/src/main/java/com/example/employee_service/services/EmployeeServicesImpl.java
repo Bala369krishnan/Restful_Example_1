@@ -23,6 +23,9 @@ public class EmployeeServicesImpl implements EmployeeServices {
 	@Override
 	public Employee getEmployee(Long empId) {
 		Optional<Employee> findById = empRepo.findById(empId);
+		if(!findById.isPresent()) {
+			return null;
+		}
 		return findById.get();
 	}
 
@@ -49,6 +52,9 @@ public class EmployeeServicesImpl implements EmployeeServices {
 		empRepo.deleteAll();
 	}
 
-	
+	@Override
+	public Employee isEmployeeExist(String email) {
+		return empRepo.findByEmail(email);
+	}
 	
 }

@@ -18,4 +18,6 @@ public interface EmployeeServices {
 	
 	public void deleteAllEmployee();
 	
+	public Employee isEmployeeExist(String email);
+	
 }

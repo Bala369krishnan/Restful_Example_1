@@ -7,5 +7,7 @@ import com.example.employee_service.model.Employee;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-
+	
+	 Employee findByEmail(String email);	
+	
 }

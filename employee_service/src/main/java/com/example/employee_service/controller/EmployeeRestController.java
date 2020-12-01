@@ -3,6 +3,8 @@ package com.example.employee_service.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,52 +18,85 @@ import com.example.employee_service.model.Employee;
 import com.example.employee_service.services.EmployeeServices;
 
 @RestController
-@RequestMapping(value="/details")
+@RequestMapping(value = "/details")
 public class EmployeeRestController {
 
 	@Autowired
 	EmployeeServices empServ;
-	
-	
-	//get all employee
-	
+
+	// ---------------retrieve all employee---------------------------
+
 	@GetMapping(value = "/employee")
-	public List<Employee> getAllEmployee(){
-		return empServ.getAllEmployee();
-		
+	public ResponseEntity<List<Employee>> getAllEmployee() {
+
+		List<Employee> employees = empServ.getAllEmployee();
+
+		// if no employee is present
+		if (employees.isEmpty()) {
+			return new ResponseEntity<List<Employee>>(HttpStatus.NO_CONTENT);
+		}
+
+		return new ResponseEntity<List<Employee>>(employees, HttpStatus.OK);
 	}
-	
-	//get employee based on id
+
+	// -------------Retrieve single employee by id ---------------------
 	@GetMapping(value = "/employee/{empId}")
-	public Employee getEmployee(@PathVariable("empId") Long empId) {
-		return empServ.getEmployee(empId);
+	public ResponseEntity<Employee> getEmployee(@PathVariable("empId") Long empId) {
+		Employee employee = empServ.getEmployee(empId);
+		if (employee == null) {
+			return new ResponseEntity<Employee>(HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<Employee>(employee, HttpStatus.OK);
 	}
-	
-	//create new employee
+
+	// --------------------Create new employee--------------------------------
 	@PostMapping
-	public void addEmployee(@RequestBody Employee employee) {
+	public ResponseEntity<Void> addEmployee(@RequestBody Employee employee) {
+
+		
+		Employee employeeExist = empServ.isEmployeeExist(employee.getEmail());
+		if (employeeExist!=null) {
+			return new ResponseEntity<Void>(HttpStatus.CONFLICT);
+		}
 		empServ.addEmployee(employee);
+		return new ResponseEntity<Void>(HttpStatus.CREATED);
 	}
-	
-	
-	
-	//update existing employee
+
+	// ---------------------Update existing employee---------------------------
 	@PutMapping(value = "/employee/{empId}")
-	public void updateEmployee(@RequestBody Employee employee , @PathVariable ("empId") Long empId) {
+	public ResponseEntity<Void> updateEmployee(@RequestBody Employee employee, @PathVariable("empId") Long empId) {
+
+		Employee currentEmployee = empServ.getEmployee(empId);
+
+		if (currentEmployee == null) {
+			return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+		}
+
 		empServ.updateEmployee(employee, empId);
+
+		return new ResponseEntity<Void>(HttpStatus.OK);
 	}
-	
-	
-	//delete employee based on id
+
+	// ------------------Delete employee based on id-------------------------
 	@DeleteMapping(value = "/employee/{empId}")
-	public void deleteEmployee(@PathVariable("empId") Long empId) {
+	public ResponseEntity<Void> deleteEmployee(@PathVariable("empId") Long empId) {
+
+		Employee isEmployeeExist = empServ.getEmployee(empId);
+
+		if (isEmployeeExist == null) {
+			return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+		}
+
 		empServ.deleteEmployee(empId);
+		return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+
 	}
-	
-	//delete all employee
+
+	// ------------------------Delete all employee-----------------------
 	@DeleteMapping(value = "/employee")
-	public void deleteAllEmployee() {
+	public ResponseEntity<Void> deleteAllEmployee() {
 		empServ.deleteAllEmployee();
+		return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
 	}
-	
+
 }
